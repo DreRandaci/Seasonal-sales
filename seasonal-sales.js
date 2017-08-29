@@ -1,67 +1,63 @@
 
 // build a web page that lists all of the products, the name of the department it's in, and the price. Additionally, put a <select> element at the top of the page that contains all possible values of the season_discount key in the categories file.
 let mainContainer = document.querySelector('#mainContainer');
+let selectBtnContainer = document.querySelector('#selectContainer');
+let selectBtn = document.querySelector('#selectBtn').value;
+// selectBtn.addEventListener('click', discountFunc)
 
-let jsonProductArray = [];
-let jsonProductId = [];
-let jsonProductName = [];
-let jsonProductPrice = [];
-let jsonProductCatergoryId = [];
-
-let jsonCatergoriesArray = [];
-let jsonCatergoriesId = [];
-let jsonCatergoriesName = [];
-let jsonCatergoriesSeasonDiscount = [];
-let jsonCatergoriesDiscount = [];
-
-let count = 0;
-
-jsonProductsKeyValues = () => {
-	jsonProductArray.forEach(function(index){
-		jsonProductId = index.id;
-		jsonProductName = index.name;
-		jsonProductPrice = index.price;
-		jsonProductCatergoryId = index.category_id;
-		console.log(jsonProductId, jsonProductName, jsonProductPrice, jsonProductCatergoryId)
-	});
+function productsJsonLoad() {
+	let productsData = JSON.parse(this.responseText).products;
+	getCatergories(productsData);
 };
 
-jsonCatergoryKeyValues = () => {
-	jsonCatergoriesArray.forEach(function(index){
-		jsonCatergoriesId = index.id;
-		jsonCatergoriesName = index.name;
-		jsonCatergoriesSeasonDiscount = index.season_discount;
-		jsonCatergoriesDiscount = index.category_discount;
-		console.log(jsonCatergoriesId, jsonCatergoriesName, jsonCatergoriesSeasonDiscount, jsonCatergoriesDiscount)
-	});
+executeThisCodeIfFileErrors = () => {
+	console.log('Error');
 };
 
-// Put a <select> element at the top of the page that contains all possible values of the season_discount key in the categories file. 
+let productsRequest = new XMLHttpRequest;
+productsRequest.addEventListener('load', productsJsonLoad);
+productsRequest.addEventListener('error', executeThisCodeIfFileErrors);
+productsRequest.open('GET', 'products.json');
+productsRequest.send();
 
-counter = () => {
-	count++
-	if (count === 2) {
-		domProducts();
-		jsonProductsKeyValues();
-		jsonCatergoryKeyValues();
-		console.log("Ya got 2!!")
+getCatergories = (productsData) => {
+	let myRequest2 = new XMLHttpRequest;
+	myRequest2.addEventListener('load', categoriesJsonLoad);
+	myRequest2.addEventListener('error', executeThisCodeIfFileErrors);
+	myRequest2.open('GET', 'categories.json');
+	myRequest2.send();
+
+	function categoriesJsonLoad() {
+		let catergoriesData = JSON.parse(this.responseText).categories;
+		combineArrays(productsData, catergoriesData);
 	};
 };
 
-domProducts = () => {
+combineArrays = (productsData, catergoriesData) => {
+
+	productsData.forEach(function(product){
+		let currentProductId = product.category_id;
+		//NESTED LOOP MATCHING ID'S OF ARRAYS
+		// list all of the products, the name of the department they're in, and their prices.
+		catergoriesData.forEach(function(category){
+			if (currentProductId === category.id) {
+			product.department = category.name;
+			product.discountPrice = category.discount;
+			}; 
+		});
+	});
+	domString(productsData);
+	// printSelectBtnDiscounts(catergoriesData);
+};
+
+domString = (productsData) => {
 	let productString = '';	
-	jsonProductArray.forEach(function(index){
-			productString += `<div id='productCards'>`;
-			productString += 	 `<h2>${index.name}</h2>`; 
-			if (index.category_id === 1) {
-			productString += 	 `<h3>${jsonCatergoriesArray[0].name}</h3>`;
-			} else if (index.category_id === 2) {
-				productString += 	 `<h3>${jsonCatergoriesArray[1].name}</h3>`;	
-			} else if (index.category_id === 3) {
-				productString += 	 `<h3>${jsonCatergoriesArray[2].name}</h3>`;	
-			}
-			productString += 	 `<h4>${index.price}</h4>`;
-			productString += `</div>`;	  
+	productsData.forEach(function(product){
+		productString += `<div id='productCards'>`;
+		productString += 	 `<h2>${product.name}</h2>`; 
+		productString += 	 `<h3>${product.department}</h3>`;
+		productString += 	 `<h3>${product.price}</h3>`;	
+		productString += `</div>`;	  
 	}); 			
 	writeToDom(productString);
 };
@@ -70,35 +66,35 @@ writeToDom = (productString) => {
 	mainContainer.innerHTML = productString;
 };
 
-function productsJsonLoad() {
-	// console.log('this', this.responseText);
-	let data = JSON.parse(this.responseText);
-	jsonProductArray = data.products;
-	counter();
-	// console.log(jsonProductArray)
-};
+// printSelectBtnDiscounts = (discount) => {
+// 	let string = '';
+// 		string += `<h4>Seasonal Discounts</h4>`;
+// 		string += `<select id="selectBtn">`;
+//   		string += 	`<option value="" id='winterDiscount'>Winter (${discount[0].discount*100}%)</option>`;
+//   		string += 	`<option value="" id='autumnDiscount>Autumn (${discount[1].discount*100}%)</option>`;
+//   		string += 	`<option value="" id='springDiscount>Spring (${discount[2].discount*100}%)</option>`;
+//   		string += `</select>`;
+//   	// console.log('string',string)
+// 	writeSelectToDom(string);
+// };
 
-function categoriesJsonLoad() {
-	// console.log('this', this.responseText);
-	let data = JSON.parse(this.responseText)
-	jsonCatergoriesArray = data.categories;
-	counter();
-	// console.log(jsonCatergoriesArray)
-};
+// writeSelectToDom = (string) => {
+// 	selectBtnContainer.innerHTML = string;
+// };
 
-executeThisCodeIfFileErrors = () => {
-	console.log('Error');
-};
+// As soon as you select one of the seasons, all prices on the page should immediately be discounted by the corresponding percentage. For example, when Spring is chosen, all products in the corresponding Household category should have their prices updated with a 15% discount off the base price.
 
-let myRequest1 = new XMLHttpRequest();
-myRequest1.addEventListener('load', productsJsonLoad);
-myRequest1.addEventListener('error', executeThisCodeIfFileErrors);
-myRequest1.open('GET', 'products.json');
-myRequest1.send();
+selectBtn.addEventListener('change', function(){
+	if (selectBtn === 10) {
+		product.price = product.price*0.1;
+	} else if (selectBtn === 25) {
+		product.price = product.price*0.25;
+	} else if (selectBtn === 15) {
+		product.price = product.price*0.15;
+	}
+});			
 
-let myRequest2 = new XMLHttpRequest();
-myRequest2.addEventListener('load', categoriesJsonLoad);
-myRequest2.addEventListener('error', executeThisCodeIfFileErrors);
-myRequest2.open('GET', 'categories.json');
-myRequest2.send();
+
+
+
 
