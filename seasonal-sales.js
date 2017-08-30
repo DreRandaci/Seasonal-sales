@@ -2,8 +2,9 @@
 // build a web page that lists all of the products, the name of the department it's in, and the price. Additionally, put a <select> element at the top of the page that contains all possible values of the season_discount key in the categories file.
 let mainContainer = document.querySelector('#mainContainer');
 let selectBtnContainer = document.querySelector('#selectContainer');
-let selectBtn = document.querySelector('#selectBtn').value;
-// selectBtn.addEventListener('click', discountFunc)
+let selectBtn = document.querySelector('#selectBtn');
+let selectBtnValue = document.querySelector('#selectBtn').value;
+let productObj;
 
 function productsJsonLoad() {
 	let productsData = JSON.parse(this.responseText).products;
@@ -34,7 +35,6 @@ getCatergories = (productsData) => {
 };
 
 combineArrays = (productsData, catergoriesData) => {
-
 	productsData.forEach(function(product){
 		let currentProductId = product.category_id;
 		//NESTED LOOP MATCHING ID'S OF ARRAYS
@@ -42,12 +42,16 @@ combineArrays = (productsData, catergoriesData) => {
 		catergoriesData.forEach(function(category){
 			if (currentProductId === category.id) {
 			product.department = category.name;
-			product.discountPrice = category.discount;
+			product.discount = category.discount;
+			product.season = category.season_discount;
+			product.discountedPrice = (product.price-(product.price*category.discount)).toFixed(2);
+			
 			}; 
 		});
 	});
 	domString(productsData);
-	// printSelectBtnDiscounts(catergoriesData);
+	productObj = productsData;
+	console.log(productObj)	
 };
 
 domString = (productsData) => {
@@ -56,7 +60,8 @@ domString = (productsData) => {
 		productString += `<div id='productCards'>`;
 		productString += 	 `<h2>${product.name}</h2>`; 
 		productString += 	 `<h3>${product.department}</h3>`;
-		productString += 	 `<h3>${product.price}</h3>`;	
+		productString += 	 `<h4 class='basePrice'>${product.price}</h4>`;
+		productString += 	 `<h4 class='hidden'>${product.discountedPrice}</h4>`;
 		productString += `</div>`;	  
 	}); 			
 	writeToDom(productString);
@@ -66,35 +71,37 @@ writeToDom = (productString) => {
 	mainContainer.innerHTML = productString;
 };
 
-// printSelectBtnDiscounts = (discount) => {
-// 	let string = '';
-// 		string += `<h4>Seasonal Discounts</h4>`;
-// 		string += `<select id="selectBtn">`;
-//   		string += 	`<option value="" id='winterDiscount'>Winter (${discount[0].discount*100}%)</option>`;
-//   		string += 	`<option value="" id='autumnDiscount>Autumn (${discount[1].discount*100}%)</option>`;
-//   		string += 	`<option value="" id='springDiscount>Spring (${discount[2].discount*100}%)</option>`;
-//   		string += `</select>`;
-//   	// console.log('string',string)
-// 	writeSelectToDom(string);
-// };
-
-// writeSelectToDom = (string) => {
-// 	selectBtnContainer.innerHTML = string;
-// };
-
 // As soon as you select one of the seasons, all prices on the page should immediately be discounted by the corresponding percentage. For example, when Spring is chosen, all products in the corresponding Household category should have their prices updated with a 15% discount off the base price.
 
-selectBtn.addEventListener('change', function(){
-	if (selectBtn === 10) {
-		product.price = product.price*0.1;
-	} else if (selectBtn === 25) {
-		product.price = product.price*0.25;
-	} else if (selectBtn === 15) {
-		product.price = product.price*0.15;
-	}
-});			
+// You can have your dom string function print both the discounted price and the regular price (so you’d need to add discounted price as a property to each product in your array). Then you can have your change event on the select show and hide based on the season.
+
+document.addEventListener('DOMContentLoaded', () => {
+    selectBtn.onchange=changeEventHandler;
+});
+
+changeEventHandler = (e) => {
+	for (let i = 0; i < productObj.length; i++) {
+		// console.log(productObj[i])
+		// console.log(e.target.value)		
+		if (e.target.value === productObj[i]) {
+			// document.querySelector('.basePrice').classList.add('hidden');
+			// document.querySelector('.hidden').classList.remove('hidden');
+			console.log(e.target.value)
+		}	
+	};
+};
 
 
+// function changeEventHandler(e) {
+// 		for (let i = 0; i < productObj.length; i++) {
+// 			if (e.target.value === productObj[i].discount) {
+// 			productObj[i].price = productObj[i].price-(productObj[i].price*e.target.value);
+// 			console.log('product object price', e, productObj[i].price)
+// 		}	
+// 	};
+// 	console.log('event', e.target.value)
+// 	domString(productObj);
+// };
 
 
 
