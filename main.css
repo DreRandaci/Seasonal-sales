@@ -1,5 +1,25 @@
 
-.hidden {
+.hidden1 {
 	display: none;
 }
 
+.hidden2 {
+	display: none;
+}
+
+.display {
+	display: block;
+}
+
+.heading {
+	text-align: center;
+	padding: 1em;
+}
+
+#productCards {
+	padding: 1em;
+	text-align: center;
+	background-color: #88B6BF;
+	margin-bottom: 10px;
+	border-radius: 15px;
+}
